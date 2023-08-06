@@ -105,7 +105,7 @@ const Context = struct {
     }
 
     fn addNode(c: *Context, elem: std.zig.Ast.Node) Allocator.Error!zig.Ast.Node.Index {
-        const result = @intCast(zig.Ast.Node.Index, c.nodes.len);
+        const result = @as(zig.Ast.Node.Index, @intCast(c.nodes.len));
         try c.nodes.append(c.gpa, elem);
         return result;
     }
@@ -116,23 +116,23 @@ const Context = struct {
 
         try c.tokens.append(c.gpa, .{
             .tag = tag,
-            .start = @intCast(u32, start_index),
+            .start = @as(u32, @intCast(start_index)),
         });
 
-        return @intCast(u32, c.tokens.len - 1);
+        return @as(u32, @intCast(c.tokens.len - 1));
     }
 
     fn listToSpan(c: *Context, list: []const zig.Ast.Node.Index) Allocator.Error!std.zig.Ast.Node.SubRange {
         try c.extra_data.appendSlice(c.gpa, list);
         return std.zig.Ast.Node.SubRange{
-            .start = @intCast(zig.Ast.Node.Index, c.extra_data.items.len - list.len),
-            .end = @intCast(zig.Ast.Node.Index, c.extra_data.items.len),
+            .start = @as(zig.Ast.Node.Index, @intCast(c.extra_data.items.len - list.len)),
+            .end = @as(zig.Ast.Node.Index, @intCast(c.extra_data.items.len)),
         };
     }
     fn addExtra(c: *Context, extra: anytype) Allocator.Error!zig.Ast.Node.Index {
         const fields = std.meta.fields(@TypeOf(extra));
         try c.extra_data.ensureUnusedCapacity(c.gpa, fields.len);
-        const result = @intCast(u32, c.extra_data.items.len);
+        const result = @as(u32, @intCast(c.extra_data.items.len));
         inline for (fields) |field| {
             comptime std.debug.assert(field.type == zig.Ast.Node.Index);
             c.extra_data.appendAssumeCapacity(@field(extra, field.name));
@@ -187,7 +187,7 @@ fn translate(
     context.nodes.items(.data)[0] = .{ .lhs = span.start, .rhs = span.end };
     try context.tokens.append(alloc, .{
         .tag = .eof,
-        .start = @intCast(u32, context.buf.items.len),
+        .start = @as(u32, @intCast(context.buf.items.len)),
     });
 
     return zig.Ast{
@@ -200,9 +200,9 @@ fn translate(
 }
 
 fn renderNode(c: *Context, aro_node_idx: aro.Tree.NodeIndex) !zig.Ast.Node.Index {
-    const tag = c.tree.nodes.items(.tag)[@enumToInt(aro_node_idx)];
-    const data = c.tree.nodes.items(.data)[@enumToInt(aro_node_idx)];
-    const ty = c.tree.nodes.items(.ty)[@enumToInt(aro_node_idx)];
+    const tag = c.tree.nodes.items(.tag)[@intFromEnum(aro_node_idx)];
+    const data = c.tree.nodes.items(.data)[@intFromEnum(aro_node_idx)];
+    const ty = c.tree.nodes.items(.ty)[@intFromEnum(aro_node_idx)];
 
     switch (tag) {
         .@"var" => {
